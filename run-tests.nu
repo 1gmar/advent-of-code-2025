@@ -6,7 +6,7 @@ def main [testPattern: string = '^day\d\d? test'] {
     scope commands
     | where ($it.type == "custom") and ($it.name =~ $testPattern)
     | get name
-    | each {|test| [$"print '(ansi yellow)Running test: (ansi bo)($test)(ansi reset)'" $test] }
+    | each {|test| [$"print '⏳ (ansi yellow)Running test: (ansi bo)($test)(ansi reset)'" $test] }
     | flatten
     | str join ";"
   )
