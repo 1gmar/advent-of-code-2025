@@ -5,6 +5,6 @@ export def "test part" [part: closure]: table<input: string, expected: int> -> n
     timeit {
       assert equal ($it.item.input | do $part $in) $it.item.expected
     }
-    | print $"testcase ($it.index): ($in)"
+    | print $"✔️ (ansi green)Test case ($it.index + 1):⏱️(ansi bo)(ansi u)($in)(ansi reset)"
   }
 }

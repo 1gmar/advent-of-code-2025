@@ -1,8 +1,7 @@
 use test-utils.nu 'test part'
 
 def to-signed-rotations []: string -> list<int> {
-  $in
-  | str replace --all --multiline 'L' '-'
+  str replace --all --multiline 'L' '-'
   | str replace --all --multiline 'R' ''
   | lines
   | each { into int }
@@ -13,8 +12,7 @@ def did-the-dial-click [p: int prevP: int rot: int]: nothing -> bool {
 }
 
 def part1 []: string -> int {
-  $in
-  | to-signed-rotations
+  to-signed-rotations
   | reduce --fold {p: 50 n: 0} {|it prev|
     let p = ($prev.p + $it) mod 100
     let n = $p == 0 | into int
@@ -24,12 +22,11 @@ def part1 []: string -> int {
 }
 
 def part2 []: string -> int {
-  $in
-  | to-signed-rotations
-  | reduce --fold {p: 50 n: 0} {|it prev|
-    let cycles = ($it | math abs) // 100
-    let p = ($prev.p + $it) mod 100
-    let n = did-the-dial-click $p $prev.p $it | into int
+  to-signed-rotations
+  | reduce --fold {p: 50 n: 0} {|rot prev|
+    let cycles = ($rot | math abs) // 100
+    let p = ($prev.p + $rot) mod 100
+    let n = did-the-dial-click $p $prev.p $rot | into int
     {p: $p n: ($prev.n + $cycles + $n)}
   }
   | get n

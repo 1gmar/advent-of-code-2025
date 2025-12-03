@@ -1,16 +1,16 @@
 use src *
 
-def main [] {
-  print "Running tests..."
+def main [testPattern: string = '^day\d\d? test'] {
+  print $"💡 (ansi yellow)(ansi bo)Running tests...(ansi reset)"
   let test_commands = (
     scope commands
-    | where ($it.type == "custom") and ($it.name =~ '^day\d\d? test')
+    | where ($it.type == "custom") and ($it.name =~ $testPattern)
     | get name
-    | each {|test| [$"print 'Running test: ($test)'" $test] }
+    | each {|test| [$"print '(ansi yellow)Running test: (ansi bo)($test)(ansi reset)'" $test] }
     | flatten
     | str join ";"
   )
   nu --commands $"use src * ; ($test_commands)"
 
-  print "Tests completed successfully!"
+  print $"✅ (ansi bo)(ansi green)All tests passed!(ansi reset)"
 }
