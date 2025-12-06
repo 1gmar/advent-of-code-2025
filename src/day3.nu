@@ -9,8 +9,7 @@ def find-split-index [size: int window: list<string> acc: list<string>] {
   | zip { $window | zip $acc }
   | where ($it.1.0 > $it.1.1)
   | default -e [[-1]]
-  | first
-  | get 0
+  | first | first
 }
 
 def accumulate-batteries [size: int acc: list<string>]: list<string> -> list<string> {
