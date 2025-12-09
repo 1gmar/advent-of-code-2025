@@ -1,8 +1,5 @@
+use utils.nu [ replicate ]
 use test-utils.nu 'test part'
-
-def zeros [size: int]: nothing -> list<string> {
-  generate {|i = 0| if $i < $size { {out: '0' next: ($i + 1)} } }
-}
 
 def find-split-index [size: int window: list<string> acc: list<string>] {
   0..($size - 1)
@@ -24,7 +21,7 @@ def accumulate-batteries [size: int acc: list<string>]: list<string> -> list<str
 def find-max-joltage [size: int]: string -> list<string> {
   split chars
   | window $size
-  | reduce --fold (zeros $size) {|window acc| $window | accumulate-batteries $size $acc }
+  | reduce --fold ($size | replicate '0') {|window acc| $window | accumulate-batteries $size $acc }
 }
 
 def part1 []: string -> int {

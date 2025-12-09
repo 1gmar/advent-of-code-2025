@@ -1,108 +1,71 @@
+use utils.nu replicate
 use test-utils.nu 'test part'
 
-def create-columns [] {
-  split chars
-  | enumerate
-  | reduce --fold {} {|x acc| $acc | insert $"($x.index)" $x.item }
+def sum-up-table []: list<list<int>> -> int {
+  each { math sum } | math sum
 }
 
-def create-windowed-view [] {
-  window 3
+def combine-tables [op: closure other: list<list<int>>]: list<list<int>> -> list<list<int>> {
+  zip $other | each {|t| $t.0 | zip $t.1 | each $op }
+}
+
+def count-@-cells-per-window []: list<list<int>> -> list<list<int>> {
+  each { enumerate | transpose -r -d }
+  | window 3
   | each {
-    transpose 0 1 2 3
-    | window 3
-    | each { transpose 0 1 2 3 | skip 1 | reject '0' }
+    transpose -i 0 1 2 | window 3 | each {
+      math sum
+      | $in.'0' + $in.'1' + $in.'2'
+      | $in > 4 | into int
+    }
   }
 }
 
-def add-table-borders [] {
+def add-table-borders [border: list<int>]: list<list<int>> -> list<list<int>> {
+  append [$border]
+  | prepend [$border]
+  | each { append [0] | prepend [0] }
+}
+
+def compute-table-for-remaining-rolls [border: list<int>]: list<list<int>> -> list<list<int>> {
   let table = $in
-  let border = $table.0
-  | items {|k _| {k: $k v: '.'} }
-  | reduce --fold {} {|row acc| $acc | insert $row.k $row.v }
   $table
-  | prepend $border
-  | append $border
-  | insert 'right' '.'
-  | enumerate | flatten
+  | add-table-borders $border
+  | count-@-cells-per-window
+  | combine-tables { $in.0 bit-and $in.1 } $table
 }
 
-def count-@-cells-on-border [] {
-  [
-    ($in.0.'1' == '@')
-    ($in.0.'2' == '@')
-    ($in.0.'3' == '@')
-    ($in.1.'1' == '@')
-    ($in.1.'3' == '@')
-    ($in.2.'1' == '@')
-    ($in.2.'2' == '@')
-    ($in.2.'3' == '@')
-  ] | each { into int } | math sum
+def parse-table []: string -> list<list<int>> {
+  lines | each { split chars | each { $in == '@' | into int } }
 }
 
-def count-@-neighbors-per-window [] {
-  where $it.1.'2' == '@' | each { count-@-cells-on-border }
+def count-removed-rolls [table: list<list<int>>]: list<list<int>> -> int {
+  combine-tables { $in.0 bit-xor $in.1 } $table | sum-up-table
 }
 
-def get-cell-pos [row: int] {
-  {|window|
-    $window.item
-    | count-@-cells-on-border
-    | if $in < 4 { {row: $row col: $window.index} }
-  }
-}
-
-def collect-@-cell-pos [] {
-  {|row|
-    $row.item
-    | enumerate
-    | where $it.item.1.'2' == '@'
-    | each (get-cell-pos $row.index)
-  }
-}
-
-def remove-cells-at [col: string rows: list<int>] {
-  update $col {|row| if $row.index - 1 in $rows { 'x' } else { $row | get $col } }
-}
-
-def find-cell-pos-to-remove [] {
-  create-windowed-view
-  | enumerate
-  | each --flatten (collect-@-cell-pos)
-}
-
-def update-table [table: table] {
-  let rowsByCols = $in
-  $rowsByCols
-  | columns
-  | reduce --fold $table {|col acc| $acc | remove-cells-at $col ($rowsByCols | get $col).row }
+def fixed-point-iteration [border: list<int>]: list<list<int>> -> list<list<int>> {
+  let $table = $in
+  generate {|table_i|
+    $table_i
+    | compute-table-for-remaining-rolls $border
+    | if $in == $table_i { {out: $table_i} } else {next: $in}
+  } $table | first
 }
 
 def part1 []: string -> int {
-  lines
-  | each { create-columns }
-  | add-table-borders
-  | create-windowed-view
-  | each --flatten { count-@-neighbors-per-window }
-  | where $it < 4
-  | length
+  let table = $in | parse-table
+  let border = $table | length | replicate 0
+  $table
+  | compute-table-for-remaining-rolls $border
+  | count-removed-rolls $table
 }
 
 def part2 []: string -> int {
-  let input = $in
-  mut table = $input
-  | lines
-  | each { create-columns }
-  | add-table-borders
-  mut count = 0
-  loop {
-    let posToRemove = $table | find-cell-pos-to-remove
-    let removed = $posToRemove | length
-    if $removed > 0 { $count += $removed } else { break }
-    let rowsByCols = $posToRemove | group-by col
-    $table = $rowsByCols | update-table $table
-  }
-  $count
+  let table = $in | parse-table
+  let border = $table | length | replicate 0
+  $table
+  | fixed-point-iteration $border
+  | count-removed-rolls $table
 }
 
 const smallInput = "..@@.@@@@.
@@ -125,18 +88,10 @@ export def "test part1" [] {
   | test part { part1 }
 }
 
-export def "test part2 small input" [] {
+export def "test part2" [] {
   [
     [input expected];
     [$smallInput 43]
-  ]
-  | test part { part2 }
-}
-
-# ignore
-export def "test part2 big input" [] {
-  [
-    [input expected];
     [(open ./resources/day4.txt) 8587]
   ]
   | test part { part2 }
