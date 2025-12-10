@@ -31,8 +31,8 @@ def part1 []: string -> int {
 }
 
 def part2 []: string -> int {
-  let ranges = split row "\n\n" | first | parse-ranges | sort-by min
-  $ranges
+  split row "\n\n" | first
+  | parse-ranges | sort-by min
   | reduce --fold [] (merge-ranges)
   | each { $in.max - $in.min + 1 }
   | math sum

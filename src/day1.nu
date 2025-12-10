@@ -11,25 +11,24 @@ def did-the-dial-click [p: int prevP: int rot: int]: nothing -> bool {
   $prevP > 0 and ($p == 0 or ($rot < 0 and $p > $prevP) or ($rot > 0 and $p < $prevP))
 }
 
+def count-dial-clicks [counter: closure]: list<int> -> int {
+  reduce --fold {dial: 50 count: 0} {|rot prev|
+    let dial = ($prev.dial + $rot) mod 100
+    {dial: $dial count: ($prev.count + (do $counter $dial $rot $prev))}
+  }
+  | get count
+}
+
 def part1 []: string -> int {
   to-signed-rotations
-  | reduce --fold {p: 50 n: 0} {|it prev|
-    let p = ($prev.p + $it) mod 100
-    let n = $p == 0 | into int
-    {p: $p n: ($prev.n + $n)}
-  }
-  | get n
+  | count-dial-clicks {|dial _ _| $dial == 0 | into int }
 }
 
 def part2 []: string -> int {
   to-signed-rotations
-  | reduce --fold {p: 50 n: 0} {|rot prev|
-    let cycles = ($rot | math abs) // 100
-    let p = ($prev.p + $rot) mod 100
-    let n = did-the-dial-click $p $prev.p $rot | into int
-    {p: $p n: ($prev.n + $cycles + $n)}
+  | count-dial-clicks {|dial rot prev|
+    (($rot | math abs) // 100) + (did-the-dial-click $dial $prev.dial $rot | into int)
   }
-  | get n
 }
 
 const smallInput = "L68
