@@ -1,5 +1,12 @@
 use src *
 
+def render-test-part-text [] {
+  {|part|
+    let test = [$part.item.day $part.item.part] | str join ' '
+    [$"print '├⏳ (ansi yellow)Running test: (ansi bo)($test)(ansi reset)'" $test]
+  }
+}
+
 def main [testPattern: string = '^day\d\d? test'] {
   print $"💡 (ansi yellow)(ansi bo)Running tests...(ansi reset)"
   let tests_criteria = {|it|
@@ -13,7 +20,14 @@ def main [testPattern: string = '^day\d\d? test'] {
     scope commands
     | where $tests_criteria
     | get name
-    | each {|test| [$"print '⏳ (ansi yellow)Running test: (ansi bo)($test)(ansi reset)'" $test] }
+    | parse '{day} {part}'
+    | group-by day
+    | items {|day item|
+      let day_cap = $day | str capitalize
+      [$"print '🧩(ansi yb)  ($day_cap):(ansi reset)'"]
+      | append ($item | enumerate | each --flatten (render-test-part-text))
+      | append [$"print '└☀️ (ansi gb)($day_cap) passed!(ansi reset)'"]
+    }
     | flatten
     | str join ";"
   )

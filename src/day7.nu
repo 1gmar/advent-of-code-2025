@@ -1,60 +1,33 @@
 use utils.nu replicate
 use test-utils.nu 'test part'
 
-def trim-overlapping-beams [] {
-  {|cell prev|
-    match $prev {
-      [] => [$cell]
-      [{c: '|' i: $i} ..$_] if $i == $cell.i => $prev
-      [{c: _ i: $i} ..$_] if $i == $cell.i => ($prev | skip | prepend [$cell])
-      _ => ($prev | prepend [$cell])
-    }
-  }
+def parse-line []: record -> table {
+  let line = $in
+  $line.item
+  | split chars | enumerate
+  | each { if $in.item == '^' { {x: $in.index y: $line.index} } }
 }
 
-def propagate-beams [row: record]: record -> record {
-  match $in.item {
-    ['S' '.'] => {cell: {c: '|' i: $in.index}}
-    ['|' '.'] => {cell: {c: '|' i: $in.index}}
-    ['|' '^'] => {
-      cell: [{c: '|' i: ($in.index - 1)} {c: '^' i: $in.index} {c: '|' i: ($in.index + 1)}]
-      split: {x: $in.index y: $row.index}
-    }
-    _ => {cell: {c: '.' i: $in.index}}
-  }
+def diagram-to-graph []: string -> table {
+  lines
+  | skip 2 | enumerate
+  | each --flatten { parse-line }
+  | enumerate | flatten
 }
 
-def fold-diagram-line [] {
-  {|row acc|
-    let line_data = $acc.fold | zip $row.item | enumerate | each { propagate-beams $row }
-    let line_splits = $line_data | get split? | where $it != null
-    let beamed_line = $line_data | get cell | flatten
-    | reduce --fold [] (trim-overlapping-beams)
-    | get c | reverse
-    {fold: $beamed_line splits: ($acc.splits | append $line_splits)}
-  }
-}
-
-def collect-timeline-splits []: string -> record {
-  let diagram = lines | each { split chars }
-  let src_line = $diagram.0
-  $diagram | skip | enumerate
-  | reduce --fold {fold: $src_line splits: []} (fold-diagram-line)
-}
-
-def find-target-node-on [side: int split: record sink: int]: list<record> -> int {
-  where x == ($split.x + $side)
+def find-target-node-on [targetX: int sink: int]: table -> int {
+  where x == $targetX
   | get index
   | default -e [$sink]
   | first
 }
 
-def link-split-nodes [splits: list<record> sink: int]: record -> list<int> {
+def link-split-nodes [splits: table sink: int]: record -> list<int> {
   let split = $in
-  let splits_below = $splits | where y > $split.y
+  let splits_below = $splits | skip ($split.index + 1)
   [
-    ($splits_below | find-target-node-on -1 $split $sink)
-    ($splits_below | find-target-node-on 1 $split $sink)
+    ($splits_below | find-target-node-on ($split.x - 1) $sink)
+    ($splits_below | find-target-node-on ($split.x + 1) $sink)
   ]
 }
 
@@ -67,14 +40,18 @@ def count-all-paths [] {
 }
 
 def part1 []: string -> int {
-  collect-timeline-splits | get splits | length
+  let nodes = diagram-to-graph
+  let sink = $nodes | length
+  $nodes
+  | each { link-split-nodes $nodes $sink }
+  | flatten | uniq | length
 }
 
 def part2 []: string -> int {
-  let splits = collect-timeline-splits | get splits | enumerate | flatten
-  let sink = $splits | length
-  $splits
-  | each { link-split-nodes $splits $sink } | enumerate
+  let nodes = diagram-to-graph
+  let sink = $nodes | length
+  $nodes
+  | each { link-split-nodes $nodes $sink } | enumerate
   | reduce --fold ($sink | replicate 0 | prepend [1]) (count-all-paths)
   | get $sink
 }
