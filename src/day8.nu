@@ -1,7 +1,7 @@
 use test-utils.nu 'test part'
 
-def sq-distance [other: list<int>]: list<int> -> int {
-  ($in.0 - $other.0) ** 2 + ($in.1 - $other.1) ** 2 + ($in.2 - $other.2) ** 2
+def sq-distance [other: record]: record -> int {
+  ($in.x - $other.x) ** 2 + ($in.y - $other.y) ** 2 + ($in.z - $other.z) ** 2
 }
 
 def sort-pairs-by-distance []: table -> table {
@@ -11,10 +11,11 @@ def sort-pairs-by-distance []: table -> table {
       {
         p1: $p1
         p2: $p2
-        d: ($p1.item | sq-distance $p2.item)
+        d: ($p1 | sq-distance $p2)
       }
     }
-  } | sort-by d
+  }
+  | sort-by d
 }
 
 def find-root [box_sets: table]: record -> record {
@@ -55,7 +56,7 @@ def connect-all-boxes [] {
 }
 
 def for-closest-pairs-do [pipeline: closure]: string -> int {
-  let pts = lines | each { split words | each { into int } } | enumerate
+  let pts = lines | parse '{x},{y},{z}' | update cells { into int } | enumerate | flatten
   let size = $pts | length
   let box_sets = 0..($size - 1) | each { {node: $in prev: null size: 1} }
   $pts
@@ -78,7 +79,7 @@ def part2 []: string -> int {
   for-closest-pairs-do {|box_sets size|
     | generate (connect-all-boxes) {box_sets: $box_sets size: $size}
     | first
-    | get p1.item.0 p2.item.0
+    | get p1.x p2.x
   }
 }
 

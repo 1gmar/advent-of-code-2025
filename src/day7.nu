@@ -39,21 +39,22 @@ def count-all-paths [] {
   }
 }
 
-def part1 []: string -> int {
+def for-nodes-do [pipeline: closure]: string -> int {
   let nodes = diagram-to-graph
   let sink = $nodes | length
-  $nodes
-  | each { link-split-nodes $nodes $sink }
-  | flatten | uniq | length
+  $nodes | do $pipeline $nodes $sink
+}
+
+def part1 []: string -> int {
+  for-nodes-do {|nodes sink| each --flatten { link-split-nodes $nodes $sink } | uniq | length }
 }
 
 def part2 []: string -> int {
-  let nodes = diagram-to-graph
-  let sink = $nodes | length
-  $nodes
-  | each { link-split-nodes $nodes $sink } | enumerate
-  | reduce --fold ($sink | replicate 0 | prepend [1]) (count-all-paths)
-  | get $sink
+  for-nodes-do {|nodes sink|
+    each { link-split-nodes $nodes $sink } | enumerate
+    | reduce --fold ($sink | replicate 0 | prepend [1]) (count-all-paths)
+    | get $sink
+  }
 }
 
 const smallInput = ".......S.......

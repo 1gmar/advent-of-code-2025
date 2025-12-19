@@ -26,7 +26,7 @@ def merge-ranges [] {
 def part1 []: string -> int {
   let input = parse-input
   $input.ids
-  | where ($input.ranges | any { $in.min <= $it and $in.max >= $it })
+  | where ($input.ranges | any { $it in $in.min..$in.max })
   | length
 }
 
