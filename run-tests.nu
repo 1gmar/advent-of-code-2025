@@ -7,13 +7,13 @@ def render-test-part-text [] {
   }
 }
 
-def main [testPattern: string = '^day\d\d? test'] {
+def main [testPattern: string = '^day\d\d? test' --ignored (-i)] {
   print $"💡 (ansi yellow)(ansi bo)Running tests...(ansi reset)"
   let tests_criteria = {|it|
     (
       $it.type == "custom"
       and $it.name =~ $testPattern
-      and not ($it.description | str starts-with 'ignore')
+      and ($ignored or not ($it.description | str starts-with 'ignore'))
     )
   }
   let test_commands = (
