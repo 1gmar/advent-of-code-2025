@@ -1,11 +1,10 @@
 :- module(simplex_wrapper, [main/0]).
-:- use_module(library(charsio)).
-:- use_module(library(clpz)).
+
+:- use_module(library(charsio), [char_type/2]).
 :- use_module(library(dcgs)).
-:- use_module(library(lambda)).
-:- use_module(library(lists)).
-:- use_module(library(os)).
-:- use_module(library(simplex)).
+:- use_module(library(lists), [foldl/4, sum_list/2, maplist/3, length/2]).
+:- use_module(library(os), [argv/1]).
+:- use_module(library(simplex), [gen_state/1, minimize/3, variable_value/3, constraint/3]).
 
 digits([C|Cs]) --> [C], { char_type(C, numeric) }, digits(Cs).
 digits([]) --> [].

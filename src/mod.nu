@@ -8,3 +8,4 @@ export module day7.nu
 export module day8.nu
 export module day9.nu
 export module day10.nu
+export module day11.nu
