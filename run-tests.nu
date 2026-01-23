@@ -20,6 +20,7 @@ def main [testPattern: string = '^day\d\d? test' --ignored (-i)] {
     scope commands
     | where $tests_criteria
     | get name
+    | sort -n
     | parse '{day} {part}'
     | group-by day
     | items {|day item|
