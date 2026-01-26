@@ -277,8 +277,8 @@ def find-min-presses-for-joltage-config []: record -> int {
   build-simplex-tableau
   | phase-1
   | phase-2
-  | basic-solution-vars
-  | math sum
+  | get c
+  | last
   | rational numerator
 }
 

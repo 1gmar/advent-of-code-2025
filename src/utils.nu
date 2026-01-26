@@ -2,53 +2,6 @@ export def replicate [this: any]: int -> list<any> {
   1..$in | each { $this }
 }
 
-export def gcd []: list<int> -> int {
-  match $in {
-    [0 $snd] => $snd
-    [$fst 0] => $fst
-    [$fst $snd] => (
-      match ($fst mod $snd) {
-        0 => $snd
-        $rem => ([$snd $rem] | gcd)
-      }
-    )
-  }
-}
-
-export def primes []: nothing -> list<int> {
-  2.. | generate {|num primes = []|
-    match ($primes | all { $num mod $in != 0 }) {
-      true => {next: ($primes | append [$num]) out: $num}
-      false => {next: $primes}
-    }
-  }
-}
-
-export def lcm [num2: int]: int -> int {
-  let num1 = $in
-  generate {|row|
-    match $row {
-      [1 1] => {out: 1}
-      [1 $x] => ($row | reverse | div-row | update next { reverse })
-      _ => ($row | div-row)
-    }
-  } [$num1 $num2]
-  | math product
-}
-
-def div-row []: list<int> -> record {
-  let x = $in | first
-  let y = $in | last
-  let factor = primes | where ($x mod $it == 0) | first
-  {
-    next: [
-      ($x // $factor)
-      (if $y mod $factor == 0 { $y // $factor } else $y)
-    ]
-    out: $factor
-  }
-}
-
 export module rational {
 
   export def abs []: oneof<int, record<num: int, den: int>> -> record<num: int, den: int> {
@@ -60,7 +13,7 @@ export module rational {
   ] {
     let term1 = $in | wrap-if-int
     let term2 = $other | wrap-if-int
-    let common_den = $term1.den | lcm $term2.den
+    let common_den = lcm $term1.den $term2.den
     let mul1 = $common_den // $term1.den
     let mul2 = $common_den // $term2.den
     {num: ($mul1 * $term1.num + $mul2 * $term2.num) den: $common_den}
@@ -72,10 +25,7 @@ export module rational {
   ] {
     let term1 = $in | wrap-if-int
     let term2 = $other | wrap-if-int
-    let common_den = $term1.den | lcm $term2.den
-    let mul1 = $common_den // $term1.den
-    let mul2 = $common_den // $term2.den
-    $mul1 * $term1.num - $mul2 * $term2.num
+    $term1.num * $term2.den - $term2.num * $term1.den
   }
 
   export def floor []: record<num: int, den: int> -> int {
@@ -105,11 +55,9 @@ export module rational {
     let dividend = $in | wrap-if-int
     let divisor = $other | wrap-if-int
     let result = $dividend | mul {num: $divisor.den den: $divisor.num}
-    let abs_vals = $result | values | math abs
-    let sign = if $result.num != 0 {
-      $result.num // $abs_vals.0 * $result.den // $abs_vals.1
-    } else 1
-    {num: ($sign * $abs_vals.0) den: $abs_vals.1}
+    if ($result.den < 0) {
+      {num: (-1 * $result.num) den: (-1 * $result.den)}
+    } else $result
   }
 
   export def numerator []: oneof<int, record<num: int, den: int>> -> int {
@@ -122,13 +70,26 @@ export module rational {
     reduce {|it| add $it }
   }
 
+  def gcd [m: int n: int]: nothing -> int {
+    match ([$m $n] | math abs) {
+      [0 $snd] => $snd
+      [$fst 0] => $fst
+      [$fst $snd] => (gcd $snd ($fst mod $snd))
+    }
+  }
+
+  def lcm [m: int n: int]: nothing -> int {
+    let gcd = gcd $m $n
+    $m * ($n // $gcd)
+  }
+
   def wrap-if-int []: oneof<int, record<num: int, den: int>> -> record<num: int, den: int> {
     if ($in | describe) == int { {num: $in den: 1} } else $in
   }
 
   def simplify []: record<num: int, den: int> -> record<num: int, den: int> {
     let fraction = $in
-    let divisor = $fraction | values | gcd
+    let divisor = gcd $fraction.num $fraction.den
     {
       num: ($fraction.num // $divisor)
       den: ($fraction.den // $divisor)
