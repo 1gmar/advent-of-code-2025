@@ -20,11 +20,8 @@
     in
     {
       packages.${system}.neovim = nixvim-1gmar.packages.${system}.default.extend {
-        filetype.extension = {
-          pl = "prolog";
-        };
         nushell.enable = true;
-        plugins.treesitter.grammarPackages = [ pkgs.vimPlugins.nvim-treesitter.builtGrammars.prolog ];
+        prolog.enable = true;
       };
       devShells.${system}.default = pkgs.mkShellNoCC {
         packages = [
