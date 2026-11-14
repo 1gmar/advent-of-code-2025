@@ -2,13 +2,14 @@
   description = "Advent of Code 2025";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    aoc-test-runner = {
-      url = "github:1gmar/aoc-test-runner";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nixvim-1gmar = {
       url = "github:1gmar/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    aoc-test-runner = {
+      url = "github:1gmar/aoc-test-runner";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixvim-1gmar.follows = "nixvim-1gmar";
     };
   };
   outputs =
@@ -23,17 +24,11 @@
       pkgs = import nixpkgs { inherit system; };
       run-tests = aoc-test-runner.packages.${system}.default;
       neovim = nixvim-1gmar.packages.${system}.default.extend {
+        git.enable = true;
         languages = {
           nushell.enable = true;
           prolog.enable = true;
         };
-      };
-      checkCmd = pkgs.writeShellApplication {
-        name = "check";
-        runtimeInputs = [ pkgs.nix ];
-        text = ''
-          exec nix build --impure -L --no-link ".#checks.${system}.default"
-        '';
       };
       resources = builtins.path {
         name = "resources";
@@ -60,7 +55,6 @@
           '';
       devShells.${system}.default = pkgs.mkShellNoCC {
         packages = [
-          checkCmd
           run-tests
           neovim
           pkgs.nushell

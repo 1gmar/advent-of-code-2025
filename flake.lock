@@ -20,14 +20,17 @@
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
+        ],
+        "nixvim-1gmar": [
+          "nixvim-1gmar"
         ]
       },
       "locked": {
-        "lastModified": 1794607615,
-        "narHash": "sha256-EnpCFryVzj9nYAQDOrETgeoDJFebhAG1NkY0onclqq0=",
+        "lastModified": 1794680031,
+        "narHash": "sha256-PPFosoJeY2LxlwyCIouL3uMXCGyakQ6THhBTqsrwazo=",
         "owner": "1gmar",
         "repo": "aoc-test-runner",
-        "rev": "3a15abeac3de19c3da57687ee0609d739c75cd79",
+        "rev": "580c1509f24398631afce20441ece951e9bc9fa0",
         "type": "github"
       },
       "original": {
