@@ -1,5 +1,4 @@
 use utils.nu [ replicate ]
-use test-utils.nu 'test part'
 
 def find-split-index [size: int window: list<string> acc: list<string>] {
   0..($size - 1)
@@ -24,37 +23,14 @@ def find-max-joltage [size: int]: string -> list<string> {
   | reduce --fold ($size | replicate '0') {|window acc| $window | accumulate-batteries $size $acc }
 }
 
-def part1 []: string -> int {
+export def part1 []: string -> int {
   lines
   | each { find-max-joltage 2 | str join | into int }
   | math sum
 }
 
-def part2 []: string -> int {
+export def part2 []: string -> int {
   lines
   | each { find-max-joltage 12 | str join | into int }
   | math sum
-}
-
-const smallInput = "987654321111111
-811111111111119
-234234234234278
-818181911112111"
-
-export def "test part1" [] {
-  [
-    [input expected];
-    [$smallInput 357]
-    [(open ./resources/day3.txt) 17343]
-  ]
-  | test part { part1 }
-}
-
-export def "test part2" [] {
-  [
-    [input expected];
-    [$smallInput 3121910778619]
-    [(open ./resources/day3.txt) 172664333119298]
-  ]
-  | test part { part2 }
 }

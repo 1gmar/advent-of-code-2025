@@ -1,5 +1,3 @@
-use test-utils.nu 'test part'
-
 def rect-area [other: record]: record -> int {
   (($in.x - $other.x | math abs) + 1) * (($in.y - $other.y | math abs) + 1)
 }
@@ -50,13 +48,13 @@ def parse-points []: string -> table {
   | update cells { into int }
 }
 
-def part1 []: string -> int {
+export def part1 []: string -> int {
   parse-points
   | for-all-pairs-do {|p1 p2| $p1 | rect-area $p2 }
   | math max
 }
 
-def part2 []: string -> int {
+export def part2 []: string -> int {
   let pts = parse-points
   let segments = $pts | collect-segments
   $pts
@@ -65,32 +63,4 @@ def part2 []: string -> int {
   | where ($segments | is-valid $it.p1 $it.p2)
   | first
   | get s
-}
-
-const smallInput = "7,1
-11,1
-11,7
-9,7
-9,5
-2,5
-2,3
-7,3"
-
-export def "test part1" [] {
-  [
-    [input expected];
-    [$smallInput 50]
-    [(open ./resources/day9.txt) 4750176210]
-  ]
-  | test part { part1 }
-}
-
-# ignore
-export def "test part2" [] {
-  [
-    [input expected];
-    [$smallInput 24]
-    [(open ./resources/day9.txt) 1574684850]
-  ]
-  | test part { part2 }
 }

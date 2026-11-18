@@ -1,5 +1,4 @@
 use utils.nu replicate
-use test-utils.nu 'test part'
 
 def parse-line []: record -> table {
   let line = $in
@@ -45,49 +44,14 @@ def for-nodes-do [pipeline: closure]: string -> int {
   $nodes | do $pipeline $nodes $sink
 }
 
-def part1 []: string -> int {
+export def part1 []: string -> int {
   for-nodes-do {|nodes sink| each --flatten { link-split-nodes $nodes $sink } | uniq | length }
 }
 
-def part2 []: string -> int {
+export def part2 []: string -> int {
   for-nodes-do {|nodes sink|
     each { link-split-nodes $nodes $sink } | enumerate
     | reduce --fold ($sink | replicate 0 | prepend [1]) (count-all-paths)
     | get $sink
   }
-}
-
-const smallInput = ".......S.......
-...............
-.......^.......
-...............
-......^.^......
-...............
-.....^.^.^.....
-...............
-....^.^...^....
-...............
-...^.^...^.^...
-...............
-..^...^.....^..
-...............
-.^.^.^.^.^...^.
-..............."
-
-export def "test part1" [] {
-  [
-    [input expected];
-    [$smallInput 21]
-    [(open ./resources/day7.txt) 1585]
-  ]
-  | test part { part1 }
-}
-
-export def "test part2" [] {
-  [
-    [input expected];
-    [$smallInput 40]
-    [(open ./resources/day7.txt) 16716444407407]
-  ]
-  | test part { part2 }
 }

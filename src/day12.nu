@@ -1,5 +1,3 @@
-use test-utils.nu 'test part'
-
 def parse-input []: string -> record {
   let segments = lines | split list ''
   let shapes = $segments
@@ -18,17 +16,9 @@ def parse-input []: string -> record {
   {shapes: $shapes regions: $regions}
 }
 
-def part1 []: string -> int {
+export def part1 []: string -> int {
   let input = parse-input
   $input.regions
   | where ($it.target | zip ($input.shapes) | each { math product } | math sum) <= $it.area
   | length
-}
-
-export def "test part1" [] {
-  [
-    [input expected];
-    [(open ./resources/day12.txt) 519]
-  ]
-  | test part { part1 }
 }

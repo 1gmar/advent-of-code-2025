@@ -49,6 +49,7 @@
           ''
             set -e
             ln -s ${./src} src
+            ln -s ${./tests} tests
             ln -s ${resources} resources
             run-tests
             touch $out

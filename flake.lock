@@ -26,11 +26,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794680031,
-        "narHash": "sha256-PPFosoJeY2LxlwyCIouL3uMXCGyakQ6THhBTqsrwazo=",
+        "lastModified": 1795019482,
+        "narHash": "sha256-4eKRY3+SV3tvhXnT3OEwptGpqxsa0Us+mI3SDD0TZlU=",
         "owner": "1gmar",
         "repo": "aoc-test-runner",
-        "rev": "580c1509f24398631afce20441ece951e9bc9fa0",
+        "rev": "133061a968d0a5b2c9688226916bfed58227c226",
         "type": "github"
       },
       "original": {

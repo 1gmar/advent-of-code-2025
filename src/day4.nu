@@ -1,5 +1,4 @@
 use utils.nu replicate
-use test-utils.nu 'test part'
 
 def sum-up-table []: list<list<int>> -> int {
   each { math sum } | math sum
@@ -52,7 +51,7 @@ def fixed-point-iteration [border: list<int>]: list<list<int>> -> list<list<int>
   } $table | first
 }
 
-def part1 []: string -> int {
+export def part1 []: string -> int {
   let table = $in | parse-table
   let border = $table | length | replicate 0
   $table
@@ -60,39 +59,10 @@ def part1 []: string -> int {
   | count-removed-rolls $table
 }
 
-def part2 []: string -> int {
+export def part2 []: string -> int {
   let table = $in | parse-table
   let border = $table | length | replicate 0
   $table
   | fixed-point-iteration $border
   | count-removed-rolls $table
-}
-
-const smallInput = "..@@.@@@@.
-@@@.@.@.@@
-@@@@@.@.@@
-@.@@@@..@.
-@@.@@@@.@@
-.@@@@@@@.@
-.@.@.@.@@@
-@.@@@.@@@@
-.@@@@@@@@.
-@.@.@@@.@."
-
-export def "test part1" [] {
-  [
-    [input expected];
-    [$smallInput 13]
-    [(open ./resources/day4.txt) 1376]
-  ]
-  | test part { part1 }
-}
-
-export def "test part2" [] {
-  [
-    [input expected];
-    [$smallInput 43]
-    [(open ./resources/day4.txt) 8587]
-  ]
-  | test part { part2 }
 }
